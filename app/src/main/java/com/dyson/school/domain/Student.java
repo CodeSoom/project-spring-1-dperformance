@@ -11,6 +11,12 @@
 
 package com.dyson.school.domain;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
 public class Student {
 
     private Long id;
@@ -31,4 +37,16 @@ public class Student {
 
     private String image;
 
+    @Builder
+    public Student(Long id, String name, String password, String group, String birthday, String gender, String phone, String address, String image) {
+        this.id = id;
+        this.name = name;
+        this.password = password;
+        this.group = group;
+        this.birthday = birthday;
+        this.gender = gender;
+        this.phone = phone;
+        this.address = address;
+        this.image = image;
+    }
 }
