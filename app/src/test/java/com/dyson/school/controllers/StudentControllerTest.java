@@ -4,6 +4,7 @@ import com.dyson.school.application.StudentService;
 import com.dyson.school.domain.Student;
 import com.dyson.school.dto.StudentCreateDto;
 import com.dyson.school.dto.StudentResponseDto;
+import com.dyson.school.dto.StudentUpdateDto;
 import com.dyson.school.errors.StudentNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,9 +20,11 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -36,9 +39,18 @@ class StudentControllerTest {
     private static final String SETUP_GENDER = "남";
     private static final String SETUP_GROUP = "1학년1반";
 
+    private static final String UPDATE_NAME = "나영쓰";
+    private static final String UPDATE_GENDER = "여";
+    private static final String UPDATE_GROUP = "1학년2반";
+
+
     private Student setUpStudent;
 
+    private Student updateStudent;
+
     private StudentResponseDto studentResponseDto;
+
+    private StudentResponseDto updateStudentResponseDto;
 
     @Autowired
     private MockMvc mockMvc;
@@ -58,20 +70,44 @@ class StudentControllerTest {
                 .group(SETUP_GROUP)
                 .build();
 
-        // [GET] /students
+        updateStudent = Student.builder()
+                .name(UPDATE_NAME)
+                .gender(UPDATE_GENDER)
+                .group(UPDATE_GROUP)
+                .build();
+
+        // [GET] - /students
         given(studentService.getStudents()).willReturn(List.of(setUpStudent));
 
-        // [GET] /students/{id}, EXISTED_ID
+        // [GET] - /students/{id}, EXISTED_ID
         given(studentService.getStudent(EXISTED_ID)).willReturn(setUpStudent);
 
-        // [GET] /students/{id}, NOT_EXISTED_ID
+        // [GET] - /students/{id}, NOT_EXISTED_ID
         given(studentService.getStudent(NOT_EXISTED_ID))
                 .willThrow(new StudentNotFoundException(NOT_EXISTED_ID));
 
-        // [POST]
+        // [POST] - /students
         studentResponseDto = StudentResponseDto.of(setUpStudent);
         given(studentService.createStudent(any(StudentCreateDto.class)))
                 .willReturn(studentResponseDto);
+
+        // [PUT] - /students/{id}, EXISTED_ID
+        updateStudentResponseDto = StudentResponseDto.of(updateStudent);
+        given(studentService.updateStudent(eq(EXISTED_ID), any(StudentUpdateDto.class)))
+                .willReturn(updateStudentResponseDto);
+//        given(studentService.updateStudent(eq(EXISTED_ID), any(StudentUpdateDto.class)))
+//                .will(invocation -> {
+//                    Long id = invocation.getArgument(0);
+//                    StudentUpdateDto studentUpdateDto = invocation.getArgument(1);
+//                    return Student.builder()
+//                            .id(id)
+//                            .name(studentUpdateDto.getName())
+//                            .gender(studentUpdateDto.getGender())
+//                            .group(studentUpdateDto.getGroup())
+//                            .build();
+//                });
+
+
     }
 
     @Test
@@ -101,14 +137,14 @@ class StudentControllerTest {
     }
 
     @Test
-    @DisplayName("조회하고자 하는 학생이 존재하지 않는 경우 NOT_FOUND")
+    @DisplayName("학생이 존재하지 않는경우 예외(404)를 반환합니다.")
     void detailWithNotExistedId() throws Exception {
         mockMvc.perform(get("/students/{id}", NOT_EXISTED_ID))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @DisplayName("d")
+    @DisplayName("학생을 추가하고, 반환받은 정보를 확인합니다.")
     void createWithValidAttribute() throws Exception {
         mockMvc.perform(post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -121,4 +157,28 @@ class StudentControllerTest {
                 .andExpect(jsonPath("gender").value(studentResponseDto.getGender()))
                 .andExpect(jsonPath("group").value(studentResponseDto.getGroup()));
     }
+
+    @Test
+    @DisplayName("잘못된 정보로 생성요청시 예외(400)를 반환합니다. ")
+    void createWithInvalidAttribute() throws Exception {
+        mockMvc.perform(post("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content("{\"id\":\"1000\", \"name\":\"\", \"gender\":\"\"}")
+        )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("학생 정보를 수정합니다.")
+    void updateWithExistedStudent() throws Exception {
+        mockMvc.perform(put("/students/{id}", EXISTED_ID)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .content(objectMapper.writeValueAsString(updateStudent))
+        )
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("나영쓰")));
+    }
+
 }

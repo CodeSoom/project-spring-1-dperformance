@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotBlank;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class StudentCreateDto {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class StudentUpdateDto {
 
     @NotBlank
     private String name;
@@ -30,7 +30,10 @@ public class StudentCreateDto {
     }
 
     @Builder
-    public StudentCreateDto(String name, String gender, String group) {
+    public StudentUpdateDto(@NotBlank String name,
+                            @NotBlank String gender,
+                            @NotBlank String group)
+    {
         this.name = name;
         this.gender = gender;
         this.group = group;
