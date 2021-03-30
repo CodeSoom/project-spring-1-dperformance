@@ -11,4 +11,8 @@ public class StudentService {
     public List<Student> getStudents() {
         return null;
     }
+
+    public Student getStudent(Long id) {
+        return null;
+    }
 }
