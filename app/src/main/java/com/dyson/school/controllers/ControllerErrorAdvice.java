@@ -1,5 +1,6 @@
 package com.dyson.school.controllers;
 
+import com.dyson.school.dto.ErrorResponse;
 import com.dyson.school.errors.StudentNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -13,7 +14,7 @@ public class ControllerErrorAdvice {
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(StudentNotFoundException.class)
-    public String handlerStudentNotFound() {
-        return "Student not found";
+    public ErrorResponse handlerStudentNotFound() {
+        return new ErrorResponse("Student not found");
     }
 }

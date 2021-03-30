@@ -2,7 +2,10 @@ package com.dyson.school.controllers;
 
 import com.dyson.school.application.StudentService;
 import com.dyson.school.domain.Student;
+import com.dyson.school.dto.StudentCreateDto;
+import com.dyson.school.dto.StudentResponseDto;
 import com.dyson.school.errors.StudentNotFoundException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,8 +18,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -33,8 +38,13 @@ class StudentControllerTest {
 
     private Student setUpStudent;
 
+    private StudentResponseDto studentResponseDto;
+
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
     private StudentService studentService;
@@ -48,15 +58,20 @@ class StudentControllerTest {
                 .group(SETUP_GROUP)
                 .build();
 
-        // /students
+        // [GET] /students
         given(studentService.getStudents()).willReturn(List.of(setUpStudent));
 
-        // /students/{id}, EXISTED_ID
+        // [GET] /students/{id}, EXISTED_ID
         given(studentService.getStudent(EXISTED_ID)).willReturn(setUpStudent);
 
-        // /students/{id}, NOT_EXISTED_ID
+        // [GET] /students/{id}, NOT_EXISTED_ID
         given(studentService.getStudent(NOT_EXISTED_ID))
                 .willThrow(new StudentNotFoundException(NOT_EXISTED_ID));
+
+        // [POST]
+        studentResponseDto = StudentResponseDto.of(setUpStudent);
+        given(studentService.createStudent(any(StudentCreateDto.class)))
+                .willReturn(studentResponseDto);
     }
 
     @Test
@@ -87,8 +102,23 @@ class StudentControllerTest {
 
     @Test
     @DisplayName("조회하고자 하는 학생이 존재하지 않는 경우 NOT_FOUND")
-    void detailWithoutExistedId() throws Exception {
+    void detailWithNotExistedId() throws Exception {
         mockMvc.perform(get("/students/{id}", NOT_EXISTED_ID))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("d")
+    void createWithValidAttribute() throws Exception {
+        mockMvc.perform(post("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .content(objectMapper.writeValueAsString(setUpStudent))
+        )
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("id").value(studentResponseDto.getId()))
+                .andExpect(jsonPath("name").value(studentResponseDto.getName()))
+                .andExpect(jsonPath("gender").value(studentResponseDto.getGender()))
+                .andExpect(jsonPath("group").value(studentResponseDto.getGroup()));
     }
 }

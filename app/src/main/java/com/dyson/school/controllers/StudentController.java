@@ -2,9 +2,15 @@ package com.dyson.school.controllers;
 
 import com.dyson.school.application.StudentService;
 import com.dyson.school.domain.Student;
+import com.dyson.school.dto.StudentCreateDto;
+import com.dyson.school.dto.StudentResponseDto;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -31,4 +37,11 @@ public class StudentController {
     public Student detail(@PathVariable Long id) {
         return studentService.getStudent(id);
     }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public StudentResponseDto create(@RequestBody StudentCreateDto studentCreateDto) {
+        return studentService.createStudent(studentCreateDto);
+    }
+
 }
