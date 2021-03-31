@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -212,6 +213,15 @@ class StudentControllerTest {
                 .content(INVALID_CONTENT)
         )
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("")
+    void destroyWithExistedStudent() throws Exception {
+        mockMvc.perform(
+                delete("/students/{id}", EXISTED_ID)
+        )
+                .andExpect(status().isOk());
 
     }
 }
