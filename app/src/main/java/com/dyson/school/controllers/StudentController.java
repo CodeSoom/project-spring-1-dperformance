@@ -51,7 +51,7 @@ public class StudentController {
     @PutMapping("{id}")
     public StudentResponseDto update(
             @PathVariable Long id,
-            @RequestBody StudentUpdateDto studentUpdateDto
+            @RequestBody @Valid StudentUpdateDto studentUpdateDto
     ) {
         return studentService.updateStudent(id, studentUpdateDto);
     }

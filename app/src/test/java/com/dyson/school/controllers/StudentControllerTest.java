@@ -43,6 +43,8 @@ class StudentControllerTest {
     private static final String UPDATE_GENDER = "여";
     private static final String UPDATE_GROUP = "1학년2반";
 
+    private static final String INVALID_CONTENT = "{\"id\":\"1\", \"name\":\"\", \"gender\":\"\"}";
+
 
     private Student setUpStudent;
 
@@ -71,6 +73,7 @@ class StudentControllerTest {
                 .build();
 
         updateStudent = Student.builder()
+                .id(EXISTED_ID)
                 .name(UPDATE_NAME)
                 .gender(UPDATE_GENDER)
                 .group(UPDATE_GROUP)
@@ -93,20 +96,27 @@ class StudentControllerTest {
 
         // [PUT] - /students/{id}, EXISTED_ID
         updateStudentResponseDto = StudentResponseDto.of(updateStudent);
-        given(studentService.updateStudent(eq(EXISTED_ID), any(StudentUpdateDto.class)))
-                .willReturn(updateStudentResponseDto);
-//        given(studentService.updateStudent(eq(EXISTED_ID), any(StudentUpdateDto.class)))
-//                .will(invocation -> {
-//                    Long id = invocation.getArgument(0);
-//                    StudentUpdateDto studentUpdateDto = invocation.getArgument(1);
-//                    return Student.builder()
-//                            .id(id)
-//                            .name(studentUpdateDto.getName())
-//                            .gender(studentUpdateDto.getGender())
-//                            .group(studentUpdateDto.getGroup())
-//                            .build();
-//                });
+        given(studentService.updateStudent(
+                eq(EXISTED_ID),
+                any(StudentUpdateDto.class))
+        )
+                .will(invocation -> {
+                    Long id = invocation.getArgument(0);
+                    StudentUpdateDto studentUpdateDto = invocation.getArgument(1);
+                    return StudentResponseDto.builder()
+                            .id(id)
+                            .name(studentUpdateDto.getName())
+                            .gender(studentUpdateDto.getGender())
+                            .group(studentUpdateDto.getGroup())
+                            .build();
+                });
 
+        // [PUT] - /students/{id}, NOT_EXISTED_ID
+        given(studentService.updateStudent(
+                eq(NOT_EXISTED_ID),
+                any(StudentUpdateDto.class))
+        )
+                .willThrow(new StudentNotFoundException(NOT_EXISTED_ID));
 
     }
 
@@ -137,7 +147,7 @@ class StudentControllerTest {
     }
 
     @Test
-    @DisplayName("학생이 존재하지 않는경우 예외(404)를 반환합니다.")
+    @DisplayName("학생이 존재하지 않는경우 NOT_FOUND(404)를 반환합니다.")
     void detailWithNotExistedId() throws Exception {
         mockMvc.perform(get("/students/{id}", NOT_EXISTED_ID))
                 .andExpect(status().isNotFound());
@@ -159,12 +169,11 @@ class StudentControllerTest {
     }
 
     @Test
-    @DisplayName("잘못된 정보로 생성요청시 예외(400)를 반환합니다. ")
+    @DisplayName("잘못된 정보로 생성요청시 BAD_REQUEST(400)을 반환합니다. ")
     void createWithInvalidAttribute() throws Exception {
         mockMvc.perform(post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\":\"1000\", \"name\":\"\", \"gender\":\"\"}")
+                .content(INVALID_CONTENT)
         )
                 .andExpect(status().isBadRequest());
     }
@@ -178,7 +187,31 @@ class StudentControllerTest {
                 .content(objectMapper.writeValueAsString(updateStudent))
         )
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("나영쓰")));
+                .andExpect(content().string(containsString("나영쓰")))
+                .andExpect(jsonPath("id").value(updateStudentResponseDto.getId()))
+                .andExpect(jsonPath("name").value(updateStudentResponseDto.getName()))
+                .andExpect(jsonPath("gender").value(updateStudentResponseDto.getGender()))
+                .andExpect(jsonPath("group").value(updateStudentResponseDto.getGroup()));
     }
 
+    @Test
+    @DisplayName("존재하지 않는 학생 수정 요청시 NOT_FOUND(404)을 반환합니다.")
+    void updateWithNotExistedStudent() throws Exception {
+        mockMvc.perform(put("/students/{id}", NOT_EXISTED_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateStudent))
+        )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("잘못된 형식으로 학생 수정 요청시 BAD_REQUEST(400)을 반환합니다.")
+    void updateWithInvalidAttribute() throws Exception {
+        mockMvc.perform(put("/students/{id}", EXISTED_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(INVALID_CONTENT)
+        )
+                .andExpect(status().isBadRequest());
+
+    }
 }

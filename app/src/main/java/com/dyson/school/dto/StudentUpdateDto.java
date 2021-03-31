@@ -1,6 +1,7 @@
 package com.dyson.school.dto;
 
 import com.dyson.school.domain.Student;
+import com.github.dozermapper.core.Mapping;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,10 +31,7 @@ public class StudentUpdateDto {
     }
 
     @Builder
-    public StudentUpdateDto(@NotBlank String name,
-                            @NotBlank String gender,
-                            @NotBlank String group)
-    {
+    public StudentUpdateDto(@NotBlank String name, @NotBlank String gender, @NotBlank String group) {
         this.name = name;
         this.gender = gender;
         this.group = group;
