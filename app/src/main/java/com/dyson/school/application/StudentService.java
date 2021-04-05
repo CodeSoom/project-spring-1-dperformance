@@ -29,4 +29,8 @@ public class StudentService {
     ) {
         return null;
     }
+
+    public Student deleteStudent(Long id) {
+        return null;
+    }
 }

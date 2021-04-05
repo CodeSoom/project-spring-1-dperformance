@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -119,6 +120,10 @@ class StudentControllerTest {
         )
                 .willThrow(new StudentNotFoundException(NOT_EXISTED_ID));
 
+        // [DELETE] - /students/{id}, NOT_EXISTED_ID
+        given(studentService.deleteStudent(NOT_EXISTED_ID))
+                .willThrow(new StudentNotFoundException(NOT_EXISTED_ID));
+
     }
 
     @Test
@@ -167,10 +172,12 @@ class StudentControllerTest {
                 .andExpect(jsonPath("name").value(studentResponseDto.getName()))
                 .andExpect(jsonPath("gender").value(studentResponseDto.getGender()))
                 .andExpect(jsonPath("group").value(studentResponseDto.getGroup()));
+
+        verify(studentService).createStudent(any(StudentCreateDto.class));
     }
 
     @Test
-    @DisplayName("잘못된 정보로 생성요청시 BAD_REQUEST(400)을 반환합니다. ")
+    @DisplayName("잘못된 정보로 생성요청시 BAD_REQUEST(400)를 반환합니다. ")
     void createWithInvalidAttribute() throws Exception {
         mockMvc.perform(post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -193,10 +200,12 @@ class StudentControllerTest {
                 .andExpect(jsonPath("name").value(updateStudentResponseDto.getName()))
                 .andExpect(jsonPath("gender").value(updateStudentResponseDto.getGender()))
                 .andExpect(jsonPath("group").value(updateStudentResponseDto.getGroup()));
+
+        verify(studentService).updateStudent(eq(EXISTED_ID), any(StudentUpdateDto.class));
     }
 
     @Test
-    @DisplayName("존재하지 않는 학생 수정 요청시 NOT_FOUND(404)을 반환합니다.")
+    @DisplayName("존재하지 않는 학생 수정 요청시 NOT_FOUND(404)를 반환합니다.")
     void updateWithNotExistedStudent() throws Exception {
         mockMvc.perform(put("/students/{id}", NOT_EXISTED_ID)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -206,7 +215,7 @@ class StudentControllerTest {
     }
 
     @Test
-    @DisplayName("잘못된 형식으로 학생 수정 요청시 BAD_REQUEST(400)을 반환합니다.")
+    @DisplayName("잘못된 형식으로 학생 수정 요청시 BAD_REQUEST(400)를 반환합니다.")
     void updateWithInvalidAttribute() throws Exception {
         mockMvc.perform(put("/students/{id}", EXISTED_ID)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -216,12 +225,22 @@ class StudentControllerTest {
     }
 
     @Test
-    @DisplayName("")
+    @DisplayName("학생을 삭제합니다.")
     void destroyWithExistedStudent() throws Exception {
         mockMvc.perform(
                 delete("/students/{id}", EXISTED_ID)
         )
                 .andExpect(status().isOk());
+        verify(studentService).deleteStudent(EXISTED_ID);
+    }
 
+    @Test
+    @DisplayName("존재하지 않는 학생 삭제 요청시 NOT_FOUND(404)를 반환합니다.")
+    void destroyWithNotExistedStudent() throws Exception {
+        mockMvc.perform(
+                delete("/students/{id}", NOT_EXISTED_ID)
+        )
+                .andExpect(status().isNotFound());
+        verify(studentService).deleteStudent(NOT_EXISTED_ID);
     }
 }
