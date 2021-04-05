@@ -29,12 +29,28 @@ public class StudentService {
         return studentRepository.findAll();
     }
 
+    /**
+     * 등록된 id를 가진 학생정보를 반환합니다.
+     *
+     * @param id 학생 식별자
+     * @return 등록된 학생
+     * @throws StudentNotFoundException 학생이 존재하지 않는 경우
+     */
     public Student getStudent(Long id) {
         return findStudent(id);
     }
 
+    /**
+     * 학생을 등록하고, 등록된 정보를 반환합니다.
+     *
+     * @param studentCreateDto 등록될 학생 정보
+     * @return 등록된 학생 정보
+     */
     public StudentResponseDto createStudent(StudentCreateDto studentCreateDto) {
-        return null;
+        Student student = studentCreateDto.toEntity();
+        Student createStudent = studentRepository.save(student);
+
+        return StudentResponseDto.of(createStudent);
     }
 
     public StudentResponseDto updateStudent(

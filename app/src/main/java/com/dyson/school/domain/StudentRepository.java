@@ -8,4 +8,6 @@ public interface StudentRepository {
     List<Student> findAll();
 
     Optional<Student> findById(Long id);
+
+    Student save(Student student);
 }
