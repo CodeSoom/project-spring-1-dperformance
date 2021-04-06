@@ -5,6 +5,7 @@ import com.dyson.school.domain.StudentRepository;
 import com.dyson.school.dto.StudentCreateDto;
 import com.dyson.school.dto.StudentResponseDto;
 import com.dyson.school.errors.StudentNotFoundException;
+import com.dyson.school.utils.Gender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,12 +27,12 @@ class StudentServiceTest {
 
     private static final Long EXISTED_ID = 1L;
     private static final String SETUP_NAME = "코돌쓰";
-    private static final String SETUP_GENDER = "남";
+    private static final String SETUP_GENDER = Gender.MAN.type();
     private static final String SETUP_GROUP = "1학년1반";
 
     private static final Long CREATE_ID = 2L;
     private static final String CREATE_NAME = "해나쓰";
-    private static final String CREATE_GENDER = "여";
+    private static final String CREATE_GENDER = Gender.WOMEN.type();
     private static final String CREATE_GROUP = "담임";
 
     private static final Long NOT_EXISTED_ID = 1000L;

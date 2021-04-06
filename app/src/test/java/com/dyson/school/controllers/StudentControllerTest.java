@@ -6,6 +6,7 @@ import com.dyson.school.dto.StudentCreateDto;
 import com.dyson.school.dto.StudentResponseDto;
 import com.dyson.school.dto.StudentUpdateDto;
 import com.dyson.school.errors.StudentNotFoundException;
+import com.dyson.school.utils.Gender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,11 +39,11 @@ class StudentControllerTest {
     private static final Long NOT_EXISTED_ID = 1000L;
 
     private static final String SETUP_NAME = "코돌쓰";
-    private static final String SETUP_GENDER = "남";
+    private static final String SETUP_GENDER = Gender.MAN.type();
     private static final String SETUP_GROUP = "1학년1반";
 
     private static final String UPDATE_NAME = "나영쓰";
-    private static final String UPDATE_GENDER = "여";
+    private static final String UPDATE_GENDER = Gender.WOMEN.type();
     private static final String UPDATE_GROUP = "1학년2반";
 
     private static final String INVALID_CONTENT = "{\"id\":\"1\", \"name\":\"\", \"gender\":\"\"}";
