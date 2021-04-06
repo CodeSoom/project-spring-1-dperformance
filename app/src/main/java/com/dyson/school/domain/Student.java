@@ -23,30 +23,21 @@ public class Student {
 
     private String name;
 
-    private String password;
+    private String gender;
 
     private String group;
 
-    private String birthday;
-
-    private String gender;
-
-    private String phone;
-
-    private String address;
-
-    private String image;
-
     @Builder
-    public Student(Long id, String name, String password, String group, String birthday, String gender, String phone, String address, String image) {
+    public Student(Long id, String name, String gender, String group) {
         this.id = id;
         this.name = name;
-        this.password = password;
-        this.group = group;
-        this.birthday = birthday;
         this.gender = gender;
-        this.phone = phone;
-        this.address = address;
-        this.image = image;
+        this.group = group;
+    }
+
+    public void changeWith(Student source) {
+        this.name = source.getName();
+        this.gender = source.getGender();
+        this.group = source.getGroup();
     }
 }
